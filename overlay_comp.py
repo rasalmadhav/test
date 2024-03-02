@@ -16,7 +16,8 @@ with main_col:
     st.write("Main content goes here")
 
     # Create and display the modal
-    with Modal():
-        st.header("Modal")
-        st.write("Modal content goes here")
-        st.button("Close Modal")
+#with Modal():
+  #  st.header("Modal")
+   # st.write("Modal content goes here")
+   # st.button("Close Modal")
+

@@ -7,6 +7,7 @@ from snowflake.snowpark import Session
 st.cache_data.clear()
 st.cache_resource.clear()
 
+
 def create_session():
     return Session.builder.configs(st.secrets["snowflake"]).create()
 
@@ -34,7 +35,6 @@ with st.expander("See sample sales dataset"):
     df = load_data(table_name)
     st.dataframe(df)
 
-
 def make_heatmap ():
         df = session.sql("SELECT timestamp, units_sold, NULL AS forecast FROM ADIDAS.PUBLIC.Mens_Apparel_sales UNION SELECT TS AS timestamp, NULL AS units_sold, forecast FROM ADIDAS.PUBLIC.sales_predictions ORDER BY timestamp asc").to_pandas()
     
@@ -58,9 +58,12 @@ def make_heatmap ():
 
         return st.session_state.fig
 
+#import streamlit as st
+
 
 # Sidebar for actions
 with st.sidebar:
+
     if 'button_clicked1' not in st.session_state:
         st.session_state.button_clicked1 = False
     if st.button("Create Forecasting Model!"):
@@ -68,20 +71,26 @@ with st.sidebar:
         session.sql("CREATE OR REPLACE forecast ADIDAS.PUBLIC.sales_forecast (INPUT_DATA => SYSTEM$REFERENCE('VIEW', 'ADIDAS.PUBLIC.Mens_Apparel_sales'),TIMESTAMP_COLNAME => 'TIMESTAMP',TARGET_COLNAME => 'UNITS_SOLD');").collect()
     if st.session_state.button_clicked1:
         st.success("Forecasting Model created successfully !")
-        
+
+    Days = st.selectbox(
+    'Select a days',
+    ('30', '60', '90'))
+
+    st.write('You selected days:', Days)
+
     if 'button_clicked2' not in st.session_state:
         st.session_state.button_clicked2 = False
     if st.button("Create Predictions!"):
         st.session_state.button_clicked2=True
-        session.sql("CALL ADIDAS.PUBLIC.sales_forecast!FORECAST(FORECASTING_PERIODS => 30);").collect()
+        session.sql("CALL ADIDAS.PUBLIC.sales_forecast!FORECAST(FORECASTING_PERIODS =>"+Days+");").collect()
         session.sql("CREATE OR REPLACE TABLE ADIDAS.PUBLIC.sales_predictions AS (SELECT * FROM TABLE(RESULT_SCAN(-1)));").collect()
     if st.session_state.button_clicked2:
         st.success("Predictions created successfully !")
-    
     if 'button_clicked3' not in st.session_state:
         st.session_state.button_clicked3 = False
     if st.button("Create Visualizations!"):
         st.session_state.button_clicked3=True
+
 
 
 col = st.columns((1.5, 4.5, 2), gap='medium')
